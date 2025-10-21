@@ -29,6 +29,8 @@
 
 ## Notes ##
 - This is a ‘proof of concept’ that is being provided ‘as is’ without any support coverage or warranty.
+- **The sharing of the 'proof of concent' is in no way an endorsement of this approach nor a recommendation to use this 'proof of concent'**.
+  - Enforcing unique email addresses in the SAML IdP is the recommendation...
 - The implementation uses a custom OSGi module meaning it is compatible with Liferay DXP Self-Hosted and Liferay PaaS, but is not compatible with Liferay SaaS.
 - The implementation was tested locally using Liferay DXP 2025.Q1.0 LTS configured as a SAML SP with Keycloak configured as a SAML IdP.
 - The base DefaultUserResolver.java class that was customized to create SAMLCustomUserResolver.java was taken from the Liferay DXP **2025.Q1.17** source code.
