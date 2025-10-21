@@ -239,7 +239,6 @@ public class SAMLCustomUserResolver implements UserResolver {
 		String screenName = _getValueAsString("screenName", attributesMap);
 		String emailAddress = _getValueAsString("emailAddress", attributesMap);
 		//MW END
-		
 
 		if (Validator.isBlank(userFieldExpression)) {
 			if (_log.isDebugEnabled()) {
@@ -265,7 +264,7 @@ public class SAMLCustomUserResolver implements UserResolver {
 							
 					attributesMap.put("emailAddress", replacementEmailAddressList);
 							
-					_log.info("Deduplicated before _updateUser...");					
+					_log.info("Deduplicated before _updateUser: " + emailAddress + " to " + replacementEmailAddress);
 				}
 			}
 			//MW END
@@ -345,10 +344,10 @@ public class SAMLCustomUserResolver implements UserResolver {
 						
 				attributesMap.put("emailAddress", emailAddressList);
 						
-				_log.info("Deduplicated...");					
+				_log.info("Deduplicated before _updateUser: " + emailAddress + " to " + replacementEmailAddress);
 			}
 		}
-		//MW END		
+		//MW END
 
 		if (user == null) {
 			user = userFieldExpressionHandler.getUser(
@@ -369,7 +368,7 @@ public class SAMLCustomUserResolver implements UserResolver {
 				
 				attributesMap.put("emailAddress", replacementEmailAddressList);
 				
-				_log.info("Deduplicated before _addUser...");
+				_log.info("Deduplicated before _addUser: " + emailAddress + " to " + replacementEmailAddress);
 			}			
 		}
 		//MW END
@@ -378,27 +377,8 @@ public class SAMLCustomUserResolver implements UserResolver {
 			return _addUser(
 				companyId, samlSpIdpConnection, attributesMap, serviceContext);
 		}
-		
-		//MW START
-		// Fetch by screenname to ensure it is the correct user...
-		User tempUser = _userLocalService.fetchUserByScreenName(companyId, screenName);
-			
-		if (Validator.isNotNull(tempUser)) {				
-			if (tempUser.getUserId() != user.getUserId()) { //Not matching so need to modify...				
-				user = tempUser;
-				
-				String replacementEmailAddress = emailAddress + StringPool.UNDERLINE + screenName.toLowerCase();
-				
-				List<Serializable> replacementEmailAddressList = new ArrayList<Serializable>();
-				replacementEmailAddressList.add(replacementEmailAddress);
-				
-				attributesMap.put("emailAddress", replacementEmailAddressList);
-				
-				_log.info("Deduplicated before _updateUser...");
-			}
-		}
-		//MW END
 
+		// MW Deduplication check done further up...
 		return _updateUser(user, attributesMap, serviceContext);
 	}
 
