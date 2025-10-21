@@ -7,6 +7,7 @@
 ## Pre-requisite ##
 - The solution must be using the out of the box Liferay SAML Service Provider (SP).
 - The Control Panel > SAML Admin > SAML IdP **MUST** be configured to Match Users by screenName.
+- ScreenName is immutable and unique per user in all systems.
 
 ## Setup ##
 - Build the custom OSGi module.
@@ -18,11 +19,17 @@
 2025-10-21 14:10:15.955 INFO  ... [SAMLCustomUserResolver:55] Activated
 ```
 
+## SAMLCustomUserResolver Notes ##
+- The implementation was tested locally using Liferay DXP 2025.Q1.0 LTS configured as a SAML SP with Keycloak configured as a SAML IdP.
+  - Keycloak doesn't allow duplicate email addresses.
+  - To replicate the scenario of duplicate email addresses in the IdP the local testing was done by manually changing screenNames in Liferay DXP for the existing user, then trying to login with SAML SSO with a IdP user with the same email address but a different screenName.
+- **Ensure all scenarios are tested in a non-prod environment before considering using this in a prod environment.**
+- Calls to the _resolveByNameId method in DefaultUserResolver.java have been deactivated as they may interfere with the custom email address change logic.
+
 ## Notes ##
 - This is a ‘proof of concept’ that is being provided ‘as is’ without any support coverage or warranty.
 - The implementation uses a custom OSGi module meaning it is compatible with Liferay DXP Self-Hosted and Liferay PaaS, but is not compatible with Liferay SaaS.
 - The implementation was tested locally using Liferay DXP 2025.Q1.0 LTS configured as a SAML SP with Keycloak configured as a SAML IdP.
-  - Keycloak doesn't allow duplicate email addresses. To replicate the scenario of duplicate email addresses in the IdP the local testing was done by manually changing screenNames in Liferay DXP for the existing user, then trying to login with SAML SSO with a IdP user with the same email address but different screenName. 
-- The base DefaultUserResolver class that was customized to create SAMLCustomUserResolver was taken from **2025.Q1.17**.
+- The base DefaultUserResolver.java class that was customized to create SAMLCustomUserResolver.java was taken from the Liferay DXP **2025.Q1.17** source code.
 - JDK 21 is expected for both compile time and runtime.
 - The module can be deployed to all nodes in the cluster, but ensure that restrict.access.login.event.enabled is not set to true on each node, otherwise privileged users will be prevented from logging to any of the cluster nodes with SAML SSO.
