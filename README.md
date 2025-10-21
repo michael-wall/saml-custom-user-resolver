@@ -8,6 +8,7 @@
 ## Pre-requisite ##
 - The solution must be using the out of the box Liferay SAML Service Provider (SP).
 - The Control Panel > SAML Admin > SAML IdP **MUST** be configured to Match Users by screenName.
+- ScreenName is immutable and unique per User in both the Liferay DXP Virtual Instance AND in the SAML IdP system.
 
 ## Setup ##
 - Build the custom OSGi module.
@@ -20,7 +21,6 @@
 ```
 
 ## SAMLCustomUserResolver Notes ##
-- ScreenName is immutable and unique per User in both the Liferay DXP Virtual Instance and in the SAMP IdP system.
 - The implementation was tested locally using Liferay DXP 2025.Q1.0 LTS configured as a SAML SP with Keycloak configured as a SAML IdP.
   - However Keycloak doesn't allow duplicate email addresses, so as a workaround for local testing oo replicate the scenario of duplicate email addresses in the IdP, the local testing was done by manually changing screenNames in Liferay DXP for an existing user, then trying to login with SAML SSO with an IdP user with the same email address but a different screenName. In theory this **should** replicate the scenario.
 - **Ensure all possible scenarios are tested in a non-prod environment with a SAML IdP that allows duplicate email addresses before considering deploying this in a prod environment.**
