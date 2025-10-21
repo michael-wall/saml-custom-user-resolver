@@ -1,9 +1,9 @@
 ## Introduction ##
 - This 'proof of concept' is designed for the scenario of SAML SSO users where the SAML IdP applows duplicate email addresses.
 - Liferay does not allow duplicate email addresses (or dupplicate screenNames) within a Virtual Instance.
-- When a new or existing user attempts to authenticate to Liferay via SAML SSO the custom code in SAMLCustomUserResolver.java will check if another user exists with the same email address.
-  - If a user with the same email address and the same screenName exists then nothing happens since it is the same user.
-  - If a user with the same email address but a different screenName exists then the email address will have the screenName appended to make the email address unique.
+- When a new or existing user attempts to access the Liferay DXP environment via SAML SSO the custom code in SAMLCustomUserResolver.java will check if another user with the same email address exists in the Liferay DXP Virtual Instance:
+  - If a user with the same email address and the same screenName exists in the Liferay DXP Virtual Instance then nothing happens since it is assumed to be the same user.
+  - If a user with the same email address but a different screenName exists in the Liferay DXP Virtual Instance then the email address will have the screenName appended to make the email address unique.
 
 ## Pre-requisite ##
 - The solution must be using the out of the box Liferay SAML Service Provider (SP).
@@ -11,7 +11,7 @@
 
 ## Setup ##
 - Build the custom OSGi module.
-- Start the Liferay cluster and deploy the custom OSGi module to each node.
+- Start the Liferay cluster and deploy the custom OSGi module to each node of the Liferay DXP cluster.
 - Confirm that the custom OSGi module deploys without any errors for example:
 ```
 2025-10-21 14:10:15.951 INFO  ... [BundleStartStopLogger:68] STARTED com.mw.saml.custom.user.resolver_1.0.0 [1500]
