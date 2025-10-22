@@ -15,9 +15,9 @@
 - Start the Liferay cluster and deploy the custom OSGi module to each node of the Liferay DXP cluster.
 - Confirm that the custom OSGi module deploys without any errors for example:
 ```
-2025-10-21 14:10:15.951 INFO  ... [BundleStartStopLogger:68] STARTED com.mw.saml.custom.user.resolver_1.0.0 [1500]
-2025-10-21 14:10:15.955 INFO  ... [SAMLCustomUserResolver:53] Activating
-2025-10-21 14:10:15.955 INFO  ... [SAMLCustomUserResolver:55] Activated
+... [BundleStartStopLogger:68] STARTED com.mw.saml.custom.user.resolver_1.0.0 [1500]
+... [SAMLCustomUserResolver:53] Activating
+... [SAMLCustomUserResolver:55] Activated
 ```
 
 ## SAMLCustomUserResolver Notes ##
@@ -27,11 +27,18 @@
 - Calls to the _resolveByNameId method in DefaultUserResolver.java have been deactivated as they may interfere with the custom email address change logic.
   - The method uses the Liferay SamlPeerBinding database table to match SAML IdP user records to Liferay User records but the Liferay User values aren't kept in sync with changes in the Liferay User_ table.
 
+## Sample Logging ##
+```
+... [SAMLCustomUserResolver:389] PREPROCESSING DEBUG CHECK: Replacement emailAddress basil.rathbone@liferay.com_basil.rathbone already in use by current user basil.rathbone
+... [SAMLCustomUserResolver:347] Replacing emailAddress before _updateUser. basil.rathbone@liferay.com changing to basil.rathbone@liferay.com_basil.rathbone
+```
+
 ## Notes ##
 - This is a ‘proof of concept’ that is being provided ‘as is’ without any support coverage or warranty.
-- **The sharing of the 'proof of concent' is in no way an endorsement of this approach nor a recommendation to use this 'proof of concent'**.
+- **The sharing of the 'proof of concent' is in no way an endorsement of this approach nor a recommendation to use this 'proof of concept'**.
   - Enforcing unique email addresses in the SAML IdP is the recommendation...
 - The implementation uses a custom OSGi module meaning it is compatible with Liferay DXP Self-Hosted and Liferay PaaS, but is not compatible with Liferay SaaS.
 - The implementation was tested locally using Liferay DXP 2025.Q1.0 LTS configured as a SAML SP with Keycloak configured as a SAML IdP.
 - The base DefaultUserResolver.java class that was customized to create SAMLCustomUserResolver.java was taken from the Liferay DXP **2025.Q1.17** source code.
+- The Liferay Workspace > gradle.properties contains liferay.workspace.product = **dxp-2025.q1.17-lts**
 - JDK 21 is expected for both compile time and runtime.
