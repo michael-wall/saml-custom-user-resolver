@@ -238,6 +238,8 @@ public class SAMLCustomUserResolver implements UserResolver {
 		//MW START
 		String screenName = _getValueAsString("screenName", attributesMap);
 		String emailAddress = _getValueAsString("emailAddress", attributesMap);
+		String replacementEmailAddress = emailAddress + StringPool.UNDERLINE + screenName.toLowerCase();
+		testUserByReplacmentEmailAddress(companyId, screenName, replacementEmailAddress);
 		//MW END
 
 		if (Validator.isBlank(userFieldExpression)) {
@@ -254,17 +256,16 @@ public class SAMLCustomUserResolver implements UserResolver {
 			User user = _userLocalService.fetchUserByScreenName(companyId, screenName);
 			
 			if (user != null) {
-				User tempUser = _userLocalService.fetchUserByEmailAddress(companyId, emailAddress);
-				
-				if (Validator.isNotNull(tempUser) && user.getUserId() != tempUser.getUserId()) {
-					String replacementEmailAddress = emailAddress + StringPool.UNDERLINE + screenName.toLowerCase();
-					
+				User tempUserByEmailAddress = _userLocalService.fetchUserByEmailAddress(companyId, emailAddress);
+
+				// Check if different user with the original email address already exists
+				if (Validator.isNotNull(tempUserByEmailAddress) && user.getUserId() != tempUserByEmailAddress.getUserId()) {
 					List<Serializable> replacementEmailAddressList = new ArrayList<Serializable>();
 					replacementEmailAddressList.add(replacementEmailAddress);
 							
 					attributesMap.put("emailAddress", replacementEmailAddressList);
 							
-					_log.info("Deduplicated before _updateUser: " + emailAddress + " to " + replacementEmailAddress);
+					_log.info("Replacing emailAddress before _updateUser. " + emailAddress + " changing to " + replacementEmailAddress);
 				}
 			}
 			//MW END
@@ -334,17 +335,16 @@ public class SAMLCustomUserResolver implements UserResolver {
 		user = _userLocalService.fetchUserByScreenName(companyId, screenName);
 		
 		if (user != null) {
-			User tempUser = _userLocalService.fetchUserByEmailAddress(companyId, emailAddress);
+			User tempUserByEmailAddress = _userLocalService.fetchUserByEmailAddress(companyId, emailAddress);
 			
-			if (Validator.isNotNull(tempUser) && user.getUserId() != tempUser.getUserId()) {
-				String replacementEmailAddress = emailAddress + StringPool.UNDERLINE + screenName.toLowerCase();
-				
+			// Check if different user with the original email address already exists
+			if (Validator.isNotNull(tempUserByEmailAddress) && user.getUserId() != tempUserByEmailAddress.getUserId()) {				
 				List<Serializable> emailAddressList = new ArrayList<Serializable>();
 				emailAddressList.add(replacementEmailAddress);
 						
 				attributesMap.put("emailAddress", emailAddressList);
 						
-				_log.info("Deduplicated before _updateUser: " + emailAddress + " to " + replacementEmailAddress);
+				_log.info("Replacing emailAddress before _updateUser. " + emailAddress + " changing to " + replacementEmailAddress);
 			}
 		}
 		//MW END
@@ -358,17 +358,16 @@ public class SAMLCustomUserResolver implements UserResolver {
 		//MW START
 		if (user == null) {
 			// Fetch by screenname to ensure it is the correct user...
-			User tempUser = _userLocalService.fetchUserByEmailAddress(companyId, emailAddress);
+			User tempUserByEmailAddress = _userLocalService.fetchUserByEmailAddress(companyId, emailAddress);
 			
-			if (Validator.isNotNull(tempUser)) { //Matching, so need to deduplicate...
-				String replacementEmailAddress = emailAddress + StringPool.UNDERLINE + screenName.toLowerCase();
-					
+			// Check if different user with the original email address already exists
+			if (Validator.isNotNull(tempUserByEmailAddress)) {
 				List<Serializable> replacementEmailAddressList = new ArrayList<Serializable>();
 				replacementEmailAddressList.add(replacementEmailAddress);
 				
 				attributesMap.put("emailAddress", replacementEmailAddressList);
 				
-				_log.info("Deduplicated before _addUser: " + emailAddress + " to " + replacementEmailAddress);
+				_log.info("Replacing emailAddress before _addUser. " + emailAddress + " changing to " + replacementEmailAddress);
 			}			
 		}
 		//MW END
@@ -380,6 +379,18 @@ public class SAMLCustomUserResolver implements UserResolver {
 
 		// MW Deduplication check done further up...
 		return _updateUser(user, attributesMap, serviceContext);
+	}
+	
+	private void testUserByReplacmentEmailAddress(long companyId, String screenName, String replacementEmailAddress) {
+		User tempUserReplacmentEmailAddress = _userLocalService.fetchUserByEmailAddress(companyId, replacementEmailAddress);
+		
+		if (Validator.isNotNull(tempUserReplacmentEmailAddress)) {
+			if (screenName.equalsIgnoreCase(tempUserReplacmentEmailAddress.getScreenName())) {
+				_log.info("PREPROCESSING DEBUG CHECK: Replacement emailAddress " + replacementEmailAddress + " already in use by current user " + tempUserReplacmentEmailAddress.getScreenName());				
+			} else {
+				_log.info("PREPROCESSING DEBUG CHECK: Replacement emailAddress " + replacementEmailAddress + " already in use by other user " + tempUserReplacmentEmailAddress.getScreenName());				
+			}
+		}
 	}
 
 	private User _processUser(
